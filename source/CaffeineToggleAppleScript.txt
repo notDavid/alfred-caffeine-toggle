@@ -1,0 +1,41 @@
+tell application "System Events"
+	set isGrowlRunning to (count of (every process whose bundle identifier is "com.Growl.GrowlHelperApp")) > 0
+end tell
+
+if isGrowlRunning then
+	tell application id "com.Growl.GrowlHelperApp"
+		set the allNotificationsList to ¬
+			{"activated", "deactivated"}
+		set the enabledNotificationsList to ¬
+			{"activated", "deactivated"}
+		register as application ¬
+			"Caffeine toggle" all notifications allNotificationsList default notifications enabledNotificationsList ¬
+			icon of application "Caffeine"
+	end tell
+end if
+
+try
+	tell application "Caffeine"
+		if active is false then
+			turn on
+			if isGrowlRunning then
+				tell application id "com.Growl.GrowlHelperApp"
+					notify with name ¬
+						"activated" title ¬
+						"Caffeine toggled" description ¬
+						"Enabled..." application name "Caffeine toggle"
+				end tell
+			end if
+		else
+			turn off
+			if isGrowlRunning then
+				tell application id "com.Growl.GrowlHelperApp"
+					notify with name ¬
+						"deactivated" title ¬
+						"Caffeine toggled" description ¬
+						"Disabled..." application name "Caffeine toggle"
+				end tell
+			end if
+		end if
+	end tell
+end try
